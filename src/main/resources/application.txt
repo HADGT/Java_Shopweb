@@ -1,0 +1,58 @@
+#spring.application.name=management
+spring:
+  sql:
+    init:
+      mode: always
+  jpa:
+    # Hiển thị các câu lệnh SQL mà Hibernate thực thi trên cơ sở dữ liệu trong terminal hoặc console.
+    # Cách hoạt động:
+    # Khi bạn chạy ứng dụng, Hibernate sẽ tự động in ra các câu lệnh SELECT, INSERT, UPDATE, DELETE mà nó gửi đến database.
+    # điều này giúp bạn debug, kiểm tra câu SQL Hibernate tạo ra có đúng không.
+    show-sql: true
+    hibernate:
+      # Xác định cách Hibernate xử lý bảng trong database khi ứng dụng khởi động.
+      #none	        Không tự động thay đổi database. Khi bạn muốn tự tạo bảng bằng SQL, Hibernate không tự động chỉnh sửa schema.
+      #validate	    Chỉ kiểm tra schema, không thay đổi. Khi muốn Hibernate chỉ kiểm tra schema, không thay đổi bảng. Dùng trong Production.
+      #update	    Cập nhật schema nếu cần, không làm mất dữ liệu. Sử dụng khi bạn đang phát triển và không muốn mất dữ liệu sau mỗi lần chạy ứng dụng.
+      #create	    Xóa toàn bộ bảng cũ rồi tạo bảng mới. Dùng khi bạn muốn reset lại database mỗi lần chạy ứng dụng.
+      #create-drop	Xóa toàn bộ bảng cũ, tạo bảng mới, và xóa luôn bảng sau khi ứng dụng dừng. Giống create, nhưng sẽ xóa bảng khi ứng dụng dừng.
+      # Lời khuyên cho bạn
+      #Nếu đang xây dựng ứng dụng: Dùng update để giữ dữ liệu và tự động cập nhật bảng.
+      #Nếu thử nghiệm entity mới: Dùng create để reset database mới lên chạy.
+      #Nếu triển khai thực tế (production): Dùng validate hoặc none để đảm bảo không mất dữ liệu.
+      ddl-auto: update
+    properties:
+      # Xác định loại database mà Hibernate sử dụng làm việc.
+      dialect: org.hibernate.dialect.SQLServerDialect
+      enable_lazy_load_no_trans: true
+      format_sql: false
+  datasource:
+    url: jdbc:sqlserver://localhost;databaseName=CSDL_QL_JAVA;encrypt=false;trustServerCertificate=true;useBulkCopyForBatchInsert=true
+    # Thêm useBulkCopyForBatchInsert=true để tối ưu hiệu suất
+    # encrypt=false;trustServerCertificate=true giúp kết nối dễ dàng hơn mà không gặp lỗi chứng chỉ SSL.
+    # autoReconnect=true	Tự động kết nối lại khi mất kết nối	❌ Không cần thiết (SQL Server có cơ chế kết nối ổn định)
+    # useUnicode=true	Kích hoạt hỗ trợ Unicode	❌ Không cần thiết (SQL Server hỗ trợ Unicode mặc định)
+    username: DESKTOP-K1FUUMR\SQLEXPRESS
+    password: 156314@Dh
+    driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    # Xác định driver JDBC sẽ kết nối với SQL Server.
+  servlet:
+#    path: /api
+    multipart:
+      # Mục đích: Cấu hình tải lên file (file upload) trong Spring Boot.
+      max-file-size: 50MB # 50MB -> Giới hạn dung lượng một file tối đa là 50MB.
+      max-request-size: 50MB # 50MB -> Giới hạn tổng dung lượng tất cả file trong một request.
+  jdbc:
+    template:
+      #  Mục đích: Tối ưu truy vấn SQL với JDBC Template trong Spring.
+      fetch-size: 100 # Khi lấy dữ liệu từ database, chỉ lấy 100 dòng/lần thay vì toàn bộ, giúp giảm tải bộ nhớ.
+      max-rows: 1000 # Giới hạn số dòng tối đa có thể lấy từ database là 1000 dòng
+      #📌 Tác dụng:
+      # Cải thiện hiệu suất truy vấn với tập dữ liệu lớn.
+      # Tránh lỗi OutOfMemoryException khi truy vấn dữ liệu lớn.
+server:
+  # port: 8080 -> Xác định cổng chạy ứng dụng. Mặc định Spring Boot chạy trên cổng 8080, nhưng có thể thay đổi
+  error:
+    # Mục đích: Cấu hình thông tin lỗi khi xảy ra exception.
+    include-message: always # Luôn hiển thị nội dung lỗi trong phản hồi API.
+    include-binding-errors: always # Hiển thị lỗi validation (VD: nhập sai dữ liệu).
