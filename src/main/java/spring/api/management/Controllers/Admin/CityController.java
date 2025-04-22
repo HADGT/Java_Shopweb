@@ -29,7 +29,6 @@ public class CityController {
     private CityService cityService;
     @Autowired
     private CountryService countryService;
-    @JsonIgnore
     private final Logger logger = LoggerFactory.getLogger(getClass());
     @Autowired
     private CityRepository cityRepository;

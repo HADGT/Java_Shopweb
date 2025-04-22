@@ -23,7 +23,6 @@ public class DepartmentController {
 
     @Autowired
     private DepartmentService departmentService;
-    @JsonIgnore
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @GetMapping
