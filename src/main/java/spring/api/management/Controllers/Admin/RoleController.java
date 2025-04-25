@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import spring.api.management.Resource.Roles.Request;
-import spring.api.management.Resource.Roles.Response;
-import spring.api.management.Services.RoleService;
+import spring.api.management.model.Resource.Roles.Request;
+import spring.api.management.model.Resource.Roles.Response;
+import spring.api.management.model.Services.RoleService;
 import spring.api.management.helper.ActionMessage;
-import spring.api.management.models.Roles;
+import spring.api.management.model.DTO.Roles;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,13 +27,10 @@ public class RoleController {
     public ResponseEntity<?> getAllRoles() {
         try {
             List<Roles> roles = roleService.getAllRoles();
-            if (roles.isEmpty()) {
-                logger.warn("Lỗi: Danh sách trống!");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Danh sách trống!");
-            }
-            return ResponseEntity.ok(roles);
+            return roles.isEmpty() ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Danh sách trống!") :
+                    ResponseEntity.ok(roles);
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: " + e.getMessage());
         }
     }
@@ -42,13 +39,10 @@ public class RoleController {
     public ResponseEntity<?> getRoleByName(@RequestParam String name) {
         try {
             List<Roles> roles = roleService.getRoleByName(name);
-            if (roles.isEmpty()) {
-                logger.warn("Lỗi: Danh sách trống!");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy kết quả cần tìm!");
-            }
-            return ResponseEntity.ok(roles);
+            return roles.isEmpty() ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy kết quả cần tìm!") :
+                    ResponseEntity.ok(roles);
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: {}" + e.getMessage());
         }
     }
@@ -82,7 +76,6 @@ public class RoleController {
             logger.warn("Không tìm thấy role có id: {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy role để xóa!");
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: " + e.getMessage());
         }
     }

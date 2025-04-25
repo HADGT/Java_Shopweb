@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import spring.api.management.Resource.Country.Request;
-import spring.api.management.Resource.Country.Response;
-import spring.api.management.Services.CountryService;
+import spring.api.management.model.Resource.Country.Request;
+import spring.api.management.model.Resource.Country.Response;
+import spring.api.management.model.Services.CountryService;
 import spring.api.management.helper.ActionMessage;
-import spring.api.management.models.Countries;
+import spring.api.management.model.DTO.Countries;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,13 +28,10 @@ public class CountryController {
     public ResponseEntity<?> getAllCountries() {
         try {
             List<Countries> countries = countryService.getAllCountries();
-            if (countries.isEmpty()) {
-                logger.warn("Lỗi: Danh sách trống!");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Danh sách trống!");
-            }
-            return ResponseEntity.ok(countries);
+            return countries.isEmpty() ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Danh sách trống!") :
+                    ResponseEntity.ok(countries);
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: " + e.getMessage());
         }
     }
@@ -47,31 +44,36 @@ public class CountryController {
             Set<Countries> result = new HashSet<>();
             result.addAll(countries);
             result.addAll(countries1);
-            if (result.isEmpty()) {
-                logger.warn("Lỗi: Danh sách trống!");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy kết quả cần tìm!");
-            }
-            return ResponseEntity.ok(result);
+            return result.isEmpty() ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy kết quả cần tìm!") :
+                    ResponseEntity.ok(result);
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: {}" + e.getMessage());
         }
     }
 
     @PostMapping
-    public Countries createCountry(@RequestBody Countries countries) {
-        return countryService.createCountries(countries);
+    public ResponseEntity<?> createCity(@RequestBody Countries countries) {
+        try {
+            Countries country = countryService.createCountries(countries);
+            return (country == null) ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy kết quả cần tìm!") :
+                    ResponseEntity.ok(country);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new spring.api.management.model.Resource.City.Response(null, e.getMessage()));
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Response> updateCountry(@PathVariable int id, @RequestBody Request request) {
         try {
-            if (request.getCountryId() == null || request.getCountryId().isEmpty() || request.getName() == null || request.getName().isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response(null, ActionMessage.SEARCH_FAIL));
-            } else {
-                Countries country = countryService.updateCountries(id, request.getCountryId(), request.getName());
-                return ResponseEntity.status(HttpStatus.OK).body(new Response(country, null));
+            String countryId = request.getCountryId();
+            String name = request.getName();
+            if (countryId == null || countryId.isEmpty() || name == null || name.isEmpty()) {
+                return ResponseEntity.badRequest().body(new Response(null, ActionMessage.SEARCH_FAIL));
             }
+            Countries updatedCountry = countryService.updateCountries(id, countryId, name);
+            return ResponseEntity.ok(new Response(updatedCountry, null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Response(null, e.getMessage()));
         }
@@ -87,7 +89,6 @@ public class CountryController {
             logger.warn("Không tìm thấy job có id: {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy job để xóa!");
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: " + e.getMessage());
         }
     }

@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import spring.api.management.Resource.Jobs.Request;
-import spring.api.management.Resource.Jobs.Response;
-import spring.api.management.Services.JobService;
+import spring.api.management.model.Resource.Jobs.Request;
+import spring.api.management.model.Resource.Jobs.Response;
+import spring.api.management.model.Services.JobService;
 import spring.api.management.helper.ActionMessage;
-import spring.api.management.models.Jobs;
+import spring.api.management.model.DTO.Jobs;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,13 +28,10 @@ public class JobController {
     public ResponseEntity<?> getAllJobs() {
         try {
             List<Jobs> jobs = jobService.getAllJobs();
-            if (jobs.isEmpty()) {
-                logger.warn("Lỗi: Danh sách trống!");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Danh sách trống!");
-            }
-            return ResponseEntity.ok(jobs);
+            return jobs.isEmpty() ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Danh sách trống!") :
+                    ResponseEntity.ok(jobs);
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: " + e.getMessage());
         }
     }
@@ -43,11 +40,9 @@ public class JobController {
     public ResponseEntity<?> getJobByName(@RequestParam String title) {
         try {
             List<Jobs> jobs = jobService.getJobyName(title);
-            if (jobs.isEmpty()) {
-                logger.warn("Lỗi: Danh sách trống!");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy kết quả cần tìm!");
-            }
-            return ResponseEntity.ok(jobs);
+            return jobs.isEmpty() ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy kết quả cần tìm!") :
+                    ResponseEntity.ok(jobs);
         } catch (Exception e) {
             logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: {}" + e.getMessage());
@@ -58,13 +53,10 @@ public class JobController {
     public ResponseEntity<?> getJobBySalary(@RequestParam(required = false) BigDecimal x, @RequestParam(required = false) BigDecimal y) {
         try {
             if (x == null) {
-                return ResponseEntity.badRequest().body("Lỗi: x không được để trống!" + x);
+                return ResponseEntity.badRequest().body("Lỗi: x không được để trống!");
             }
             if (y == null) {
-                return ResponseEntity.badRequest().body("Lỗi: y không được để trống!" + y);
-            }
-            if (x.compareTo(BigDecimal.ZERO) < 0) {
-                return ResponseEntity.badRequest().body("Lỗi: Min salary không thể âm! x = " + x);
+                return ResponseEntity.badRequest().body("Lỗi: y không được để trống!");
             }
             if (x.compareTo(BigDecimal.ZERO) < 0) {
                 return ResponseEntity.badRequest().body("Lỗi: Min salary không thể âm! x = " + x);
@@ -76,13 +68,10 @@ public class JobController {
                 return ResponseEntity.badRequest().body("Lỗi: Min salary không thể lớn hơn max salary! x = " + x + ", y = " + y);
             }
             List<Jobs> jobs = jobService.getJobBySalary(x, y);
-            if (jobs == null || jobs.isEmpty()) {
-                logger.warn("Không tìm thấy công việc nào trong khoảng lương từ {} đến {}", x, y);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy công việc nào trong khoảng lương từ " + x + " đến " + y);
-            }
-            return ResponseEntity.ok(jobs);
+            return jobs.isEmpty() ?
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy công việc nào trong khoảng lương từ " + x + " đến " + y) :
+                    ResponseEntity.ok(jobs);
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: {}" + e.getMessage());
         }
     }
@@ -116,7 +105,6 @@ public class JobController {
             logger.warn("Không tìm thấy job có id: {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy job để xóa!");
         } catch (Exception e) {
-            logger.error("Lỗi máy chủ");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Lỗi máy chủ: " + e.getMessage());
         }
     }
